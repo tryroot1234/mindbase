@@ -5,11 +5,12 @@ A local knowledge base CLI tool. Store, search, and organize your notes directly
 ## Features
 
 - **Add/Edit/Delete** entries with title, content, and tags
-- **Full-text search** powered by SQLite FTS5
+- **Full-text search** powered by SQLite FTS5 with CJK support
 - **Tag system** for organizing entries
 - **Import/Export** as JSON
 - **Rich terminal output** with tables and panels
 - **Editor integration** for writing long content
+- **Recent entries** for quick access
 
 ## Installation
 
@@ -52,6 +53,12 @@ mindbase tags
 # Show statistics
 mindbase stats
 
+# Recent entries
+mindbase recent
+
+# Open in editor
+mindbase open 1
+
 # Export / Import
 mindbase export -o backup.json
 mindbase import backup.json
@@ -64,13 +71,19 @@ mindbase import backup.json
 | `add`     | Add a new entry                |
 | `show`    | Show entry details             |
 | `list`    | List entries (filter by tag)   |
-| `search`  | Full-text search               |
+| `search`  | Full-text search (CJK-aware)   |
 | `edit`    | Edit an existing entry         |
 | `delete`  | Delete an entry                |
 | `tags`    | List all tags                  |
 | `stats`   | Show statistics                |
+| `recent`  | Show recent entries            |
+| `open`    | Open entry in editor           |
 | `export`  | Export entries as JSON          |
 | `import`  | Import entries from JSON        |
+
+## CJK Search Support
+
+mindbase supports full-text search for Chinese, Japanese, and Korean text. CJK characters are tokenized at the character level, allowing substring matching. For example, searching for "技巧" will find entries containing "Python技巧".
 
 ## Data Storage
 
