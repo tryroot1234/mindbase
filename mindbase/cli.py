@@ -51,7 +51,7 @@ def cli(ctx: click.Context, db: str | None) -> None:
 def add(ctx: click.Context, title: str, content: str, tags: str, editor: bool) -> None:
     """Add a new entry."""
     if editor:
-        result = open_editor(f"# {title}\n\n")
+        result = open_editor(f"# {title}\n\n", title=title)
         if result is None:
             console.print("[yellow]Discarded.[/yellow]")
             return
@@ -194,7 +194,7 @@ def edit(
         if tags is not None:
             entry.tags = [t.strip() for t in tags.split(",") if t.strip()]
         if editor:
-            result = open_editor(entry.content)
+            result = open_editor(entry.content, title=entry.title)
             if result is None:
                 console.print("[yellow]Discarded.[/yellow]")
                 return
@@ -350,7 +350,7 @@ def open(ctx: click.Context, entry_id: int) -> None:
             console.print(f"[red]Entry #{entry_id} not found.[/red]")
             sys.exit(1)
 
-        new_content = open_editor(entry.content)
+        new_content = open_editor(entry.content, title=entry.title)
         if new_content is None:
             console.print("[yellow]Discarded.[/yellow]")
         elif new_content != entry.content:
