@@ -51,7 +51,11 @@ def cli(ctx: click.Context, db: str | None) -> None:
 def add(ctx: click.Context, title: str, content: str, tags: str, editor: bool) -> None:
     """Add a new entry."""
     if editor:
-        content = open_editor(f"# {title}\n\n")
+        result = open_editor(f"# {title}\n\n")
+        if result is None:
+            console.print("[yellow]Discarded.[/yellow]")
+            return
+        content = result
 
     tag_list = [t.strip() for t in tags.split(",") if t.strip()] if tags else []
     entry = Entry(title=title, content=content, tags=tag_list)
@@ -190,7 +194,11 @@ def edit(
         if tags is not None:
             entry.tags = [t.strip() for t in tags.split(",") if t.strip()]
         if editor:
-            entry.content = open_editor(entry.content)
+            result = open_editor(entry.content)
+            if result is None:
+                console.print("[yellow]Discarded.[/yellow]")
+                return
+            entry.content = result
 
         entry = update_entry(conn, entry)
         console.print(f"[green]Entry #{entry.id} updated![/green]")
@@ -331,7 +339,10 @@ def recent(ctx: click.Context, limit: int) -> None:
 @click.argument("entry_id", type=int)
 @click.pass_context
 def open(ctx: click.Context, entry_id: int) -> None:
-    """Open an entry in your editor for quick editing."""
+    """Open an entry in your editor for quick editing.
+
+    Save the file empty to discard changes (quit without saving).
+    """
     conn = get_connection(ctx.obj["db_path"])
     try:
         entry = get_entry(conn, entry_id)
@@ -340,7 +351,9 @@ def open(ctx: click.Context, entry_id: int) -> None:
             sys.exit(1)
 
         new_content = open_editor(entry.content)
-        if new_content != entry.content:
+        if new_content is None:
+            console.print("[yellow]Discarded.[/yellow]")
+        elif new_content != entry.content:
             entry.content = new_content
             update_entry(conn, entry)
             console.print(f"[green]Entry #{entry.id} updated![/green]")

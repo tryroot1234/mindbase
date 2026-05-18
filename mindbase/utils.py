@@ -8,11 +8,17 @@ import tempfile
 from pathlib import Path
 
 
-def open_editor(content: str = "") -> str:
-    """Open the user's preferred editor and return the content."""
+QUIT_MARKER = "<!-- QUIT: Save this file empty to discard changes -->\n\n"
+
+
+def open_editor(content: str = "", allow_quit: bool = True) -> str | None:
+    """Open the user's preferred editor and return the content.
+
+    If allow_quit is True and the file is saved empty, returns None
+    to indicate the user wants to discard changes.
+    """
     editor = os.environ.get("EDITOR") or os.environ.get("VISUAL")
     if not editor:
-        # Try common editors
         for cmd in ("vim", "nvim", "nano", "vi", "notepad"):
             if _command_exists(cmd):
                 editor = cmd
@@ -20,15 +26,23 @@ def open_editor(content: str = "") -> str:
     if not editor:
         editor = "notepad"
 
+    header = QUIT_MARKER if allow_quit else ""
     with tempfile.NamedTemporaryFile(
         suffix=".md", mode="w", delete=False, encoding="utf-8"
     ) as f:
-        f.write(content)
+        f.write(header + content)
         tmp_path = f.name
 
     try:
         subprocess.run([editor, tmp_path], check=True)
-        return Path(tmp_path).read_text(encoding="utf-8")
+        raw = Path(tmp_path).read_text(encoding="utf-8")
+        # Strip the quit marker if present
+        if allow_quit and raw.startswith(QUIT_MARKER.strip()):
+            raw = raw[len(QUIT_MARKER):]
+        # Empty content means discard
+        if allow_quit and not raw.strip():
+            return None
+        return raw
     finally:
         Path(tmp_path).unlink(missing_ok=True)
 
