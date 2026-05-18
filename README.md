@@ -20,7 +20,29 @@ A local knowledge base CLI tool. Store, search, and organize your notes directly
 
 ## Installation / 安装
 
+### One-click Install / 一键安装
+
+**Linux / macOS:**
 ```bash
+curl -fsSL https://raw.githubusercontent.com/tryroot1234/mindbase/main/install.sh | bash
+```
+
+**Windows (PowerShell):**
+```powershell
+iwr -useb https://raw.githubusercontent.com/tryroot1234/mindbase/main/install.ps1 | iex
+```
+
+### Manual Install / 手动安装
+
+```bash
+pip install git+https://github.com/tryroot1234/mindbase.git
+```
+
+### From Source / 从源码安装
+
+```bash
+git clone https://github.com/tryroot1234/mindbase.git
+cd mindbase
 pip install -e .
 ```
 
