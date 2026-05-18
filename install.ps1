@@ -1,7 +1,7 @@
 # mindbase installer for Windows
 # Usage: iwr -useb https://raw.githubusercontent.com/tryroot1234/mindbase/main/install.ps1 | iex
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Continue"
 
 Write-Host "Installing mindbase..." -ForegroundColor Cyan
 
@@ -10,7 +10,7 @@ function Get-Python {
     $commands = @("python3", "python", "py -3")
     foreach ($cmd in $commands) {
         try {
-            $version = & $cmd --version 2>&1
+            $version = & $cmd --version 2>&1 | Out-String
             if ($version -match "Python (\d+)\.(\d+)") {
                 $major = [int]$Matches[1]
                 $minor = [int]$Matches[2]
@@ -37,11 +37,16 @@ Write-Host "Using Python: $python" -ForegroundColor Green
 # Install via pip
 Write-Host ""
 Write-Host "Installing mindbase with pip..." -ForegroundColor Cyan
-& $python -m pip install --user --upgrade pip 2>$null
+& $python -m pip install --user --upgrade pip 2>&1 | Out-Null
 & $python -m pip install --user "git+https://github.com/tryroot1234/mindbase.git"
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Error: Installation failed." -ForegroundColor Red
+    exit 1
+}
 
 # Check if Scripts directory is in PATH
-$scriptsDir = & $python -c "import site; print(site.USER_BASE + '\\Scripts')" 2>$null
+$scriptsDir = & $python -c "import site; print(site.USER_BASE + '\\Scripts')" 2>&1 | Out-String
+$scriptsDir = $scriptsDir.Trim()
 if ($scriptsDir -and $env:PATH -notlike "*$scriptsDir*") {
     Write-Host ""
     Write-Host "NOTE: Add the following to your PATH:" -ForegroundColor Yellow
