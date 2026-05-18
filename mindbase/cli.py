@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sys
+from datetime import UTC, timedelta, timezone
 from pathlib import Path
 
 import click
@@ -30,6 +31,17 @@ from mindbase.models import Entry
 from mindbase.utils import format_tags, open_editor, truncate
 
 console = Console()
+
+TZ_UTC8 = timezone(timedelta(hours=8))
+
+
+def _to_utc8(dt):
+    """Convert datetime to UTC+8 string."""
+    if dt is None:
+        return ""
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=UTC)
+    return dt.astimezone(TZ_UTC8).strftime("%Y-%m-%d %H:%M")
 
 
 @click.group()
@@ -90,7 +102,7 @@ def show(ctx: click.Context, entry_id: int) -> None:
         panel = Panel(
             md,
             title=header,
-            subtitle=f"Updated: {entry.updated_at:%Y-%m-%d %H:%M}",
+            subtitle=f"Updated: {_to_utc8(entry.updated_at)}",
         )
         console.print(panel)
     finally:
@@ -121,7 +133,7 @@ def list_cmd(ctx: click.Context, tag: str | None, limit: int) -> None:
                 str(e.id),
                 truncate(e.title, 50),
                 format_tags(e.tags),
-                f"{e.updated_at:%Y-%m-%d %H:%M}",
+                _to_utc8(e.updated_at),
             )
 
         console.print(table)
